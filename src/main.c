@@ -23,14 +23,10 @@
 
 float my_time_series[ACC_TIME_TICKS * ACC_AXIS];
 int ticks_stored;
-float score;
-int learning_samples;
-bool learning = false;
 
 /* 1000 msec = 1 sec */
 #define SLEEP_TIME_MS 1000
 
-/* The devicetree node identifier for the "led0" alias. */
 #define LED0_NODE DT_ALIAS(led0)
 
 #if DT_NODE_HAS_STATUS(LED0_NODE, okay)
@@ -38,7 +34,6 @@ bool learning = false;
 #define PIN DT_GPIO_PIN(LED0_NODE, gpios)
 #define FLAGS DT_GPIO_FLAGS(LED0_NODE, gpios)
 #else
-/* A build error here means your board isn't set up to blink an LED. */
 #error "Unsupported board: led0 devicetree alias is not defined"
 #define LED0 ""
 #define PIN 0
@@ -49,39 +44,27 @@ int64_t time_previous;
 int64_t time_next;
 
 #if !DT_HAS_COMPAT_STATUS_OKAY(adi_adxl362)
-#error "No adi,adxl362 compatible node found in the device tree"
+#error "No ADXL362!"
 #endif
 
 void main(void)
 {
-
-    for(;;) {
-        int num;
-        num = fogml_random(0,100);
-        fogml_printf_int(num);
-        fogml_printf("\n");
-    }
-
     const struct device *dev;
-    // bool led_is_on = true;
     int ret;
 
     struct sensor_value accel[3];
 
     const struct device *dev_acc = device_get_binding(DT_LABEL(DT_INST(0, adi_adxl362)));
-
-    //const struct device *dev_acc = DEVICE_DT_GET_ANY(adi_adxl372);
-
     if (dev_acc == NULL)
     {
-        printf("Device get binding device\n");
+        printf("ACC device binding problem!\n");
         return;
     }
 
     dev = device_get_binding(LED0);
     if (dev == NULL)
     {
-        printf("Device get binding device\n");
+        printf("LED device binding problem!\n");
         return;
     }
 
@@ -106,13 +89,13 @@ void main(void)
 
         if (sensor_sample_fetch(dev_acc) < 0)
         {
-            printf("Sample fetch error\n");
+            printf("Sample fetch error!\n");
             return;
         }
 
         if (sensor_channel_get(dev_acc, SENSOR_CHAN_ACCEL_XYZ, &accel[0]) < 0)
         {
-            printf("Channel get error\n");
+            printf("Channel get error!\n");
             return;
         }
 
@@ -128,46 +111,9 @@ void main(void)
 #ifdef DATA_LOGGER
             fogml_features_logger(my_time_series);
 #else
-            if (learning)
-            {
-                // led_all_off();
-                // digitalWrite(BLUE, LOW);
-                fogml_learning(my_time_series);
-                // digitalWrite(BLUE, HIGH);
-                // learning_samples++;
-
-                if (learning_samples == LEARNING_SAMPLES)
-                {
-                    learning_samples = 0;
-                    learning = false;
-                    // digitalWrite(BLUE, HIGH);
-                }
-            }
-            else
-            {
-                //fogml_processing(my_time_series, &score);
-
-                fogml_classification(my_time_series);
-
-                if (score > 2.5)
-                {
-                    // digitalWrite(RED, LOW);
-                }
-                else
-                {
-                    // digitalWrite(RED, HIGH);
-                }
-            }
-
-            // proximity_detection();
+            fogml_classification(my_time_series);
 #endif
-
             ticks_stored = 0;
         }
     }
-
-    // gpio_pin_set(dev, PIN, (int)led_is_on);
-    // led_is_on = !led_is_on;
-    // k_msleep(SLEEP_TIME_MS);
-    // printk("***\n");
 }

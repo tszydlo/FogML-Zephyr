@@ -14,8 +14,6 @@
    limitations under the License.
 */
 
-#include "../fogml_sdk/classifier/fogml_classifier.h"
-
 int classifier(float * x) {
   int results[100];
   if (x[8] <= 316.3899993896) {

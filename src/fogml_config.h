@@ -33,18 +33,7 @@
 
 // DIGITAL SIGNAL PROCESSING
 // number of features - depends on the DSP blocks
-//#define FOGML_VECTOR_SIZE  ((2+1+1)*ACC_AXIS)
 #define FOGML_VECTOR_SIZE ((TINYML_DSP_BASE_LEN + TINYML_DSP_ENERGY_LEN + TINYML_DSP_CROSSINGS_LEN) * ACC_AXIS)
-//BLOCK 1 - FFT
-//tinyml_block_fft_config_t block1_config = {
-//    .peaks = 3,
-//};
-
-//tinyml_dsp_block_t block1 = {
-//    .type = TINYML_DSP_FFT,
-//    .config = &block1_config
-//};
-
 
 //BLOCK 1 - BASE
 tinyml_block_base_config_t block1_config;

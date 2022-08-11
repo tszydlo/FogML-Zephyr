@@ -27,18 +27,11 @@ int ticks_stored;
 /* 1000 msec = 1 sec */
 #define SLEEP_TIME_MS 1000
 
-#define LED0_NODE DT_ALIAS(led0)
-
-#if DT_NODE_HAS_STATUS(LED0_NODE, okay)
-#define LED0 DT_GPIO_LABEL(LED0_NODE, gpios)
-#define PIN DT_GPIO_PIN(LED0_NODE, gpios)
-#define FLAGS DT_GPIO_FLAGS(LED0_NODE, gpios)
-#else
-#error "Unsupported board: led0 devicetree alias is not defined"
-#define LED0 ""
-#define PIN 0
-#define FLAGS 0
-#endif
+#define LED_NODE(n) DT_ALIAS(led##n)
+#define LED_LABEL(n) DT_GPIO_LABEL(LED_NODE(n), gpios)
+#define LED_PIN(n) DT_GPIO_PIN(LED_NODE(n), gpios)
+#define LED_FLAGS(n) (GPIO_OUTPUT_INACTIVE | DT_GPIO_FLAGS(LED_NODE(n), gpios))
+#define LED_DEV(n) DEVICE_DT_GET(DT_GPIO_CTLR(LED_NODE(n), gpios))
 
 int64_t time_previous;
 int64_t time_next;
@@ -47,11 +40,62 @@ int64_t time_next;
 #error "No ADXL362!"
 #endif
 
-void main(void)
+void led_init()
 {
     const struct device *dev;
-    int ret;
 
+    dev = device_get_binding(LED_LABEL(0));
+    if (dev != NULL)
+    {
+        gpio_pin_configure(dev, LED_PIN(0), GPIO_OUTPUT_ACTIVE | LED_FLAGS(0));
+    }
+
+    dev = device_get_binding(LED_LABEL(1));
+    if (dev != NULL)
+    {
+        gpio_pin_configure(dev, LED_PIN(1), GPIO_OUTPUT_ACTIVE | LED_FLAGS(1));
+    }
+
+    dev = device_get_binding(LED_LABEL(2));
+    if (dev != NULL)
+    {
+        gpio_pin_configure(dev, LED_PIN(2), GPIO_OUTPUT_ACTIVE | LED_FLAGS(2));
+    }
+}
+
+void led_set_0(bool val)
+{
+    if (device_is_ready(LED_DEV(0)))
+    {
+        gpio_pin_set(LED_DEV(0), LED_PIN(0), val);
+    }
+}
+
+void led_set_1(bool val)
+{
+    if (device_is_ready(LED_DEV(1)))
+    {
+        gpio_pin_set(LED_DEV(1), LED_PIN(1), val);
+    }
+}
+
+void led_set_2(bool val)
+{
+    if (device_is_ready(LED_DEV(2)))
+    {
+        gpio_pin_set(LED_DEV(2), LED_PIN(2), val);
+    }
+}
+
+void led_value(int v)
+{
+    led_set_0(v >> 0 & 1);
+    led_set_1(v >> 1 & 1);
+    led_set_2(v >> 2 & 1);
+}
+
+void main(void)
+{
     struct sensor_value accel[3];
 
     const struct device *dev_acc = device_get_binding(DT_LABEL(DT_INST(0, adi_adxl362)));
@@ -61,18 +105,7 @@ void main(void)
         return;
     }
 
-    dev = device_get_binding(LED0);
-    if (dev == NULL)
-    {
-        printf("LED device binding problem!\n");
-        return;
-    }
-
-    ret = gpio_pin_configure(dev, PIN, GPIO_OUTPUT_ACTIVE | FLAGS);
-    if (ret < 0)
-    {
-        return;
-    }
+    led_init();
 
     time_previous = k_uptime_get();
     ticks_stored = 0;
@@ -111,7 +144,8 @@ void main(void)
 #ifdef DATA_LOGGER
             fogml_features_logger(my_time_series);
 #else
-            fogml_classification(my_time_series);
+            int cl = fogml_classification(my_time_series);
+            led_value(cl + 1);
 #endif
             ticks_stored = 0;
         }

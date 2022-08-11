@@ -144,7 +144,7 @@ void fogml_processing(float *time_series_data, float *score) {
     free(vector);
 } 
 
-void fogml_classification(float *time_series_data) {
+int fogml_classification(float *time_series_data) {
     float *vector = (float*)malloc(sizeof(float) * FOGML_VECTOR_SIZE);
     tinyml_dsp(time_series_data, vector, &my_dsp_config);
     int cl;
@@ -158,6 +158,8 @@ void fogml_classification(float *time_series_data) {
 #endif
 
     free(vector);
+
+    return cl;
 } 
 
 void fogml_features_logger(float *time_series_data) {

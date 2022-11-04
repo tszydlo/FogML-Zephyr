@@ -162,6 +162,30 @@ int fogml_classification(float *time_series_data) {
     return cl;
 } 
 
+
+extern fogml_anomaly_config_t kmeans_anomaly_config;
+extern fogml_min_max_scaler_config_t min_max_scaler_config;
+
+float fogml_anomaly_detector(float *time_series_data) {
+    float *vector = (float*)malloc(sizeof(float) * FOGML_VECTOR_SIZE);
+    tinyml_dsp(time_series_data, vector, &my_dsp_config);
+    float anomaly_sc;
+
+    min_max_scaler(vector, &min_max_scaler_config);
+
+    anomaly_sc = anomaly_score(vector, &kmeans_anomaly_config);
+
+#ifdef FOGML_VERBOSE
+    fogml_printf("Anomaly score = ");
+    fogml_printf_float(anomaly_sc);
+    fogml_printf("\n");
+#endif
+
+    free(vector);
+
+    return anomaly_sc;
+} 
+
 void fogml_features_logger(float *time_series_data) {
     float *vector = (float*)malloc(sizeof(float) * FOGML_VECTOR_SIZE);
     tinyml_dsp(time_series_data, vector, &my_dsp_config);

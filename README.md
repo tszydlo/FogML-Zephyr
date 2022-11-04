@@ -14,6 +14,9 @@ In the example, gestures are classified using the random forest algorithm. The g
 
 For the device to recognize other gestures, it is necessary to collect training data, assign labels, and train the model. The entire process is described in Jupyter Notebook, along with training data in the `tools` directory. Notepad can be run in eg Google Colab or Anaconda.
 
+## Anomaly detection
+The example uses the modification of the K-Means algorithm and z-score to detect anomalies - deviations from training data. Model generation for this purpose is described in Jupyter Notebook located in the `tools` directory.
+
 ## Building
 The application is implemented for the Zephyr OS operating system. Since the application is for Thingy:91 device, we use NRF Connect SDK 2.0.0 and VSCode plugin, which simplifies the process of building, flashing and debugging applications for Zephyr. The application can also be built directly using the `west` tool and the base Zephyr.
 

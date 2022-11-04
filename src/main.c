@@ -144,6 +144,7 @@ void main(void)
 #ifdef DATA_LOGGER
             fogml_features_logger(my_time_series);
 #else
+            float score = fogml_anomaly_detector(my_time_series);
             int cl = fogml_classification(my_time_series);
             led_value(cl + 1);
 #endif

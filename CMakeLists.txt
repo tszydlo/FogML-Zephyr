@@ -5,10 +5,12 @@ find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 project(FogML-Zephyr)
 
 set(fogml_sources
+    src/fogml_sdk/anomaly/fogml_anomaly.c
     src/fogml_sdk/anomaly_rt/fogml_lof.c
     src/fogml_sdk/anomaly_rt/fogml_reservoir.c
     src/fogml_sdk/ports/fogml_ports_zephyr.c
     src/fogml_sdk/dsp/fogml_dsp.c
+    src/fogml_sdk/scaler/fogml_scaler.c
 )
 
 file(GLOB fogml_generated CONFIGURE_DEPENDS
